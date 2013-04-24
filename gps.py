@@ -1,4 +1,5 @@
 import serial
+import time
 
 class AttributeDict(dict):
     """Access elements of the dict as attributes"""
@@ -16,12 +17,29 @@ def _float_or_none(value):
     else:
         return None
 
+def _parse_time(s):
+    return s[:2], s[2:4], s[4:]
+
 class Gps(object):
     """A GPS receiver"""
     def __init__(self):
         self._gpsSerial = serial.Serial('/dev/ttyUSB0', 4800, timeout=0.5)
 
-    def get_gga_line(self, attempts=10):
+    def time(self):
+        t = 0
+        while t == 0:
+            try:
+                line = self.get_gga_line()
+            except IOError:
+                print 'GGA couldn\'t be found in time, waiting for a bit then retrying'
+            if self.checksum(line):
+                fields = self._name_fields(line)
+                t = _parse_time(fields.time)
+            else:
+                print 'Checksum failed, retrying...'
+        return t
+
+    def get_gga_line(self, attempts=20):
         for i in range(attempts):
             line = self._gpsSerial.readline(None).strip()
             if line.startswith('$GPGGA'):
