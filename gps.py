@@ -28,6 +28,7 @@ class Gps(object):
     def time(self):
         t = 0
         while t == 0:
+            time.sleep(0.5)
             try:
                 line = self.get_gga_line()
             except IOError:
