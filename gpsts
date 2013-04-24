@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import subprocess
 
 # WARNING Don't run this on a production machine
 
